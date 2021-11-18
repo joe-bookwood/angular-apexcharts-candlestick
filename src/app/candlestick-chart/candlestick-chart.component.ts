@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Dayjs } from 'dayjs';
 
 import {
@@ -9,7 +9,7 @@ import {
   ApexYAxis,
   ChartComponent,
 } from 'ng-apexcharts';
-import { filter, map, Observable } from 'rxjs';
+import { filter, map, Observable, Subject, takeUntil } from 'rxjs';
 import { IChartDataResponse } from '../chart-data-response.model';
 import { OhlcChartService } from '../ohlc-chart.service';
 
@@ -26,9 +26,11 @@ export type ChartOptions = {
   templateUrl: './candlestick-chart.component.html',
   styleUrls: ['./candlestick-chart.component.css'],
 })
-export class CandlestickChartComponent implements OnInit {
+export class CandlestickChartComponent implements OnInit, OnDestroy {
   @ViewChild('chart') chart: ChartComponent;
   public chartOptions: Partial<ChartOptions>;
+
+  private readonly onDestroy$ = new Subject<void>();
 
   public data$: Observable<IChartDataResponse | undefined>;
   constructor(private ohlcChartService: OhlcChartService) {
@@ -65,6 +67,8 @@ export class CandlestickChartComponent implements OnInit {
           }
         })
       )
+      // unsubscribe, wenn das Destroy-Subject eine Event ausloest
+      .pipe(takeUntil(this.onDestroy$))
       .subscribe((value) => {
         // eslint-disable-next-line no-console
         console.log('log: ', value);
@@ -78,8 +82,8 @@ export class CandlestickChartComponent implements OnInit {
       series: [
         {
           name: 'candle',
-          data: []
-        }
+          data: [],
+        },
       ],
       chart: {
         type: 'candlestick',
@@ -98,6 +102,9 @@ export class CandlestickChartComponent implements OnInit {
         },
       },
     };
+  }
+  ngOnDestroy(): void {
+    this.onDestroy$.unsubscribe;
   }
 
   ngOnInit() {}
