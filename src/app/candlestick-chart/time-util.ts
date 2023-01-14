@@ -23,13 +23,15 @@ export class TimeUtil {
   }
 
   public toLocal(time: dayjs.Dayjs): Date {
-    // eslint-disable-next-line no-console
-    console.log('local date start', time);
-    const local = time.tz(this.timeZone, true).toDate();
 
     // eslint-disable-next-line no-console
-    console.log('local date debug', local)
-    return local;
+    console.log('Zulu time:', time);
+    const zDate: Date = time.toDate();
+    // eslint-disable-next-line no-console
+    console.log('convert to:', this.timeZone);
+    const local: dayjs.Dayjs = dayjs(zDate,this.timeZone);
+
+    return local.toDate();
   }
 
 }
